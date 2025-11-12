@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>分岐付きスライド ver.10（複数動画・終了共通）</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: black;
+    }
+
+    .slide {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 0;
+      border-radius: 12px;
+    }
+
+    button {
+      background-color: rgba(255,255,255,0.8);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: rgba(255,255,255,1);
+    }
+
+    video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 800px;
+      border-radius: 12px;
+      z-index: 50;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .close-video {
+      position: absolute;
+      top: calc(50% - 200px);
+      right: calc(50% - 400px);
+      background-color: rgba(255, 80, 80, 0.9);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      z-index: 60;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      video { width: 90%; }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="slides"></div>
+
+  <script>
+    const slidesData = [
+      { image: "s1.JPG" }, // 0
+      { image: "s2.JPG" }, // 1
+      { image: "s3.JPG", branch: true }, // 2 (分岐)
+      { image: "a1.JPG", videos: ["a1_1.mp4", "a1_2.mp4"], to: 4 }, // 3
+      { image: "a2.JPG", to: 9 }, // 4 → 終了
+      { image: "b1.JPG", videos: ["b1_1.mp4"], to: 6 }, // 5
+      { image: "b2.JPG", to: 7 }, // 6
+      { image: "b3.JPG", to: 8 }, // 7
+      { image: "b4.JPG", to: 9 }, // 8
+      { image: "s4.JPG", end: true } // 9 (終了)
+    ];
+
+    let currentSlide = 0;
+    let previousSlide = 0;
+
+    function showSlide(index) {
+      const slidesContainer = document.getElementById("slides");
+      slidesContainer.innerHTML = "";
+
+      const slideData = slidesData[index];
+      if (!slideData) return;
+
+      if (index !== currentSlide) {
+        previousSlide = currentSlide;
+      }
+
+      const slide = document.createElement("div");
+      slide.className = "slide";
+
+      const img = document.createElement("img");
+      img.src = slideData.image;
+      slide.appendChild(img);
+
+      const controls = document.createElement("div");
+      controls.className = "controls";
+
+      // 共通「前へ」
+      if (index > 0) {
+        const backBtn = document.createElement("button");
+        backBtn.textContent = "前へ";
+        backBtn.onclick = () => {
+          if (slideData.end) {
+            showSlide(previousSlide);
+          } else {
+            showSlide(index - 1);
+          }
+        };
+        controls.appendChild(backBtn);
+      }
+
+      // 分岐スライド（現実音 / 非現実音）
+      if (slideData.branch) {
+        const realBtn = document.createElement("button");
+        realBtn.textContent = "現実音へ";
+        realBtn.onclick = () => showSlide(3);
+        controls.appendChild(realBtn);
+
+        const unrealBtn = document.createElement("button");
+        unrealBtn.textContent = "非現実音へ";
+        unrealBtn.onclick = () => showSlide(5);
+        controls.appendChild(unrealBtn);
+      }
+
+      // 複数動画対応
+      if (slideData.videos && slideData.videos.length > 0) {
+        slideData.videos.forEach((vid, i) => {
+          const videoBtn = document.createElement("button");
+          videoBtn.textContent = `動画${i + 1}再生`;
+          videoBtn.onclick = () => {
+            const video = document.createElement("video");
+            video.src = vid;
+            video.controls = true;
+            video.autoplay = true;
+            slide.appendChild(video);
+
+            const closeBtn = document.createElement("button");
+            closeBtn.className = "close-video";
+            closeBtn.textContent = "動画を閉じる";
+            closeBtn.onclick = () => {
+              video.pause();
+              slide.removeChild(video);
+              slide.removeChild(closeBtn);
+              videoBtn.disabled = false;
+            };
+            slide.appendChild(closeBtn);
+            videoBtn.disabled = true;
+          };
+          controls.appendChild(videoBtn);
+        });
+      }
+
+      // 次へ
+      if (slideData.to !== undefined) {
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "次へ";
+        nextBtn.onclick = () => showSlide(slideData.to);
+        controls.appendChild(nextBtn);
+      }
+
+      // 終了スライド
+      if (slideData.end) {
+        const restartBtn = document.createElement("button");
+        restartBtn.textContent = "最初に戻る";
+        restartBtn.onclick = () => showSlide(0);
+        controls.appendChild(restartBtn);
+      }
+
+      slide.appendChild(controls);
+      slidesContainer.appendChild(slide);
+      slide.style.display = "block";
+      currentSlide = index;
+    }
+
+    window.onload = () => showSlide(0);
+  </script>
+</body>
+</html>
