@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>分岐付きスライド ver.10（複数動画・終了共通）</title>
+  <title>分岐付きスライド ver.9（現実音・非現実音対応）</title>
   <style>
     body {
       margin: 0;
@@ -95,16 +95,16 @@
 
   <script>
     const slidesData = [
-      { image: "s1.JPG" }, // 0
-      { image: "s2.JPG" }, // 1
-      { image: "s3.JPG", branch: true }, // 2 (分岐)
-      { image: "a1.JPG", videos: ["a1_1.mp4", "a1_2.mp4"], to: 4 }, // 3
-      { image: "a2.JPG", to: 9 }, // 4 → 終了
-      { image: "b1.JPG", videos: ["b1_1.mp4"], to: 6 }, // 5
-      { image: "b2.JPG", to: 7 }, // 6
-      { image: "b3.JPG", to: 8 }, // 7
-      { image: "b4.JPG", to: 9 }, // 8
-      { image: "s4.JPG", end: true } // 9 (終了)
+      { image: "s1.JPG" },
+      { image: "s2.JPG" },
+      { image: "s3.JPG", branch: true },
+      { image: "a1.JPG", videos: ["a1_1.mp4", "a1_2.mp4"], to: 4 },
+      { image: "a2.JPG", to: 9 },
+      { image: "b1.JPG", videos: ["b1_1.mp4"], to: 6 },
+      { image: "b2.JPG", to: 7 },
+      { image: "b3.JPG", to: 8 },
+      { image: "b4.JPG", to: 9 },
+      { image: "s4.JPG", end: true }
     ];
 
     let currentSlide = 0;
@@ -117,9 +117,7 @@
       const slideData = slidesData[index];
       if (!slideData) return;
 
-      if (index !== currentSlide) {
-        previousSlide = currentSlide;
-      }
+      if (index !== currentSlide) previousSlide = currentSlide;
 
       const slide = document.createElement("div");
       slide.className = "slide";
@@ -131,21 +129,18 @@
       const controls = document.createElement("div");
       controls.className = "controls";
 
-      // 共通「前へ」
+      // 前へ
       if (index > 0) {
         const backBtn = document.createElement("button");
         backBtn.textContent = "前へ";
         backBtn.onclick = () => {
-          if (slideData.end) {
-            showSlide(previousSlide);
-          } else {
-            showSlide(index - 1);
-          }
+          if (slideData.end) showSlide(previousSlide);
+          else showSlide(index - 1);
         };
         controls.appendChild(backBtn);
       }
 
-      // 分岐スライド（現実音 / 非現実音）
+      // 分岐スライド
       if (slideData.branch) {
         const realBtn = document.createElement("button");
         realBtn.textContent = "現実音へ";
@@ -158,7 +153,7 @@
         controls.appendChild(unrealBtn);
       }
 
-      // 複数動画対応
+      // 動画ボタン
       if (slideData.videos && slideData.videos.length > 0) {
         slideData.videos.forEach((vid, i) => {
           const videoBtn = document.createElement("button");
@@ -212,3 +207,5 @@
   </script>
 </body>
 </html>
+
+
