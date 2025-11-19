@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>分岐付きスライド ver.9（現実音・非現実音対応）</title>
+  <title>分岐付きスライド（YouTube版）</title>
   <style>
     body {
       margin: 0;
@@ -55,12 +55,13 @@
       background-color: rgba(255,255,255,1);
     }
 
-    video {
+    iframe {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 80%;
+      height: 45%;
       max-width: 800px;
       border-radius: 12px;
       z-index: 50;
@@ -80,14 +81,6 @@
       z-index: 60;
       font-size: 14px;
     }
-
-    @media (max-width: 600px) {
-      video { width: 90%; }
-      button {
-        font-size: 14px;
-        padding: 8px 16px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -95,16 +88,27 @@
 
   <script>
     const slidesData = [
-      { image: "s1.JPG" },
-      { image: "s2.JPG" },
-      { image: "s3.JPG", branch: true },
-      { image: "a1.JPG", videos: ["a1_2.mp4", "a1_2.mp4"], to: 4 },
-      { image: "a2.JPG", to: 9 },
-      { image: "b1.JPG", videos: ["a1_2.mp4"], to: 6 },
-      { image: "b2.JPG", to: 7 },
-      { image: "b3.JPG", to: 8 },
-      { image: "b4.JPG", to: 9 },
-      { image: "s4.JPG", end: true }
+      { image: "s1.JPG" },                      //0
+      { image: "s2.JPG" },                      //1
+      { image: "s3.JPG", branch: true },        //2 分岐
+      {
+        image: "a1.JPG",
+        yt: [
+          "https://www.youtube.com/embed/NQKSIqytvOo",
+          "https://www.youtube.com/embed/wM1E_WQksVs"
+        ],
+        to: 4
+      },                                        //3 A1
+      { image: "a2.JPG", to: 9 },               //4 A2 → 終了
+      {
+        image: "b1.JPG",
+        yt: ["https://www.youtube.com/embed/hU4h9NmlcmQ"],
+        to: 6
+      },                                        //5 B1
+      { image: "b2.JPG", to: 7 },               //6
+      { image: "b3.JPG", to: 8 },               //7
+      { image: "b4.JPG", to: 9 },               //8
+      { image: "s4.JPG", end: true }            //9 終了
     ];
 
     let currentSlide = 0;
@@ -140,41 +144,40 @@
         controls.appendChild(backBtn);
       }
 
-      // 分岐スライド
+      // 分岐（現実音・非現実音）
       if (slideData.branch) {
-        const realBtn = document.createElement("button");
-        realBtn.textContent = "現実音へ";
-        realBtn.onclick = () => showSlide(3);
-        controls.appendChild(realBtn);
+        const btnA = document.createElement("button");
+        btnA.textContent = "現実音へ";
+        btnA.onclick = () => showSlide(3);
+        controls.appendChild(btnA);
 
-        const unrealBtn = document.createElement("button");
-        unrealBtn.textContent = "非現実音へ";
-        unrealBtn.onclick = () => showSlide(5);
-        controls.appendChild(unrealBtn);
+        const btnB = document.createElement("button");
+        btnB.textContent = "非現実音へ";
+        btnB.onclick = () => showSlide(5);
+        controls.appendChild(btnB);
       }
 
-      // 動画ボタン
-      if (slideData.videos && slideData.videos.length > 0) {
-        slideData.videos.forEach((vid, i) => {
+      // YouTube動画
+      if (slideData.yt) {
+        slideData.yt.forEach((url, i) => {
           const videoBtn = document.createElement("button");
           videoBtn.textContent = `動画${i + 1}再生`;
           videoBtn.onclick = () => {
-            const video = document.createElement("video");
-            video.src = vid;
-            video.controls = true;
-            video.autoplay = true;
-            slide.appendChild(video);
+            const iframe = document.createElement("iframe");
+            iframe.src = url + "?autoplay=1";
+            iframe.allow = "autoplay; encrypted-media";
+            slide.appendChild(iframe);
 
             const closeBtn = document.createElement("button");
             closeBtn.className = "close-video";
             closeBtn.textContent = "動画を閉じる";
             closeBtn.onclick = () => {
-              video.pause();
-              slide.removeChild(video);
+              slide.removeChild(iframe);
               slide.removeChild(closeBtn);
               videoBtn.disabled = false;
             };
             slide.appendChild(closeBtn);
+
             videoBtn.disabled = true;
           };
           controls.appendChild(videoBtn);
@@ -189,7 +192,7 @@
         controls.appendChild(nextBtn);
       }
 
-      // 終了スライド
+      // 終了
       if (slideData.end) {
         const restartBtn = document.createElement("button");
         restartBtn.textContent = "最初に戻る";
@@ -207,6 +210,7 @@
   </script>
 </body>
 </html>
+
 
 
 
