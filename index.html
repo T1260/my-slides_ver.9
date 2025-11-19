@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>分岐付きスライド（YouTube版）</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: black;
+  }
+  .slide {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: none;
+  }
+  .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(0,0,0,0.3);
+    padding: 10px 0;
+    border-radius: 12px;
+  }
+  button {
+    background-color: rgba(255,255,255,0.8);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+  }
+  button:hover {
+    background-color: rgba(255,255,255,1);
+  }
+  iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 45%;
+    max-width: 800px;
+    border-radius: 12px;
+    z-index: 50;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+  .close-video {
+    position: absolute;
+    top: calc(50% - 200px);
+    right: calc(50% - 400px);
+    background-color: rgba(255,80,80,0.9);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    z-index: 60;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="slides"></div>
+
+<script>
+const slidesData = [
+  { image: "s1.JPG" },                 //0
+  { image: "s2.JPG" },                 //1
+  { image: "s3.JPG", branch: true },   //2 分岐
+  {
+    image: "a1.JPG",
+    yt: [
+      "https://www.youtube.com/embed/NQKSIqytvOo",
+      "https://www.youtube.com/embed/wM1E_WQksVs"
+    ],
+    to: 4
+  },                                   //3 A1
+  { image: "a2.JPG", to: 9 },          //4 A2
+  {
+    image: "b1.JPG",
+    yt: ["https://www.youtube.com/embed/hU4h9NmlcmQ"],
+    to: 6
+  },                                   //5 B1
+  { image: "b2.JPG", to: 7 },          //6
+  { image: "b3.JPG", to: 8 },          //7
+  { image: "b4.JPG", to: 9 },          //8
+  { image: "s4.JPG", end: true }       //9 終了
+];
+
+let currentSlide = 0;
+let previousSlide = 0;
+
+function showSlide(index) {
+  const slidesContainer = document.getElementById("slides");
+  slidesContainer.innerHTML = "";
+
+  const slideData = slidesData[index];
+  if (!slideData) return;
+
+  if (index !== currentSlide) previousSlide = currentSlide;
+
+  const slide = document.createElement("div");
+  slide.className = "slide";
+
+  const img = document.createElement("img");
+  img.src = slideData.image;
+  slide.appendChild(img);
+
+  const controls = document.createElement("div");
+  controls.className = "controls";
+
+  if (index > 0) {
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "前へ";
+    backBtn.onclick = () => {
+      if (slideData.end) showSlide(previousSlide);
+      else showSlide(index - 1);
+    };
+    controls.appendChild(backBtn);
+  }
+
+  if (slideData.branch) {
+    const btnA = document.createElement("button");
+    btnA.textContent = "現実音へ";
+    btnA.onclick = () => showSlide(3);
+    controls.appendChild(btnA);
+
+    const btnB = document.createElement("button");
+    btnB.textContent = "非現実音へ";
+    btnB.onclick = () => showSlide(5);
+    controls.appendChild(btnB);
+  }
+
+  if (slideData.yt) {
+    slideData.yt.forEach((url, i) => {
+      const videoBtn = document.createElement("button");
+      videoBtn.textContent = `動画${i + 1}再生`;
+      videoBtn.onclick = () => {
+        const iframe = document.createElement("iframe");
+        iframe.src = url + "?autoplay=1";
+        iframe.allow = "autoplay; encrypted-media";
+        slide.appendChild(iframe);
+
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "close-video";
+        closeBtn.textContent = "動画を閉じる";
+        closeBtn.onclick = () => {
+          slide.removeChild(iframe);
+          slide.removeChild(closeBtn);
+          videoBtn.disabled = false;
+        };
+        slide.appendChild(closeBtn);
+
+        videoBtn.disabled = true;
+      };
+      controls.appendChild(videoBtn);
+    });
+  }
+
+  if (slideData.to !== undefined) {
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "次へ";
+    nextBtn.onclick = () => showSlide(slideData.to);
+    controls.appendChild(nextBtn);
+  }
+
+  if (slideData.end) {
+    const restartBtn = document.createElement("button");
+    restartBtn.textContent = "最初に戻る";
+    restartBtn.onclick = () => showSlide(0);
+    controls.appendChild(restartBtn);
+  }
+
+  slide.appendChild(controls);
+  slidesContainer.appendChild(slide);
+  slide.style.display = "block";
+  currentSlide = index;
+}
+
+window.onload = () => showSlide(0);
+</script>
+
+</body>
+</html>
