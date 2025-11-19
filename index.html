@@ -7,73 +7,82 @@
   body {
     margin: 0;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     background-color: black;
   }
+
   .slide {
     position: relative;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     display: none;
   }
+
   .slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* ← 画像が大きすぎてボタンが沈む問題を完全解決 */
+    background-color: black;
   }
+
+  /* ★ ボタンが必ず画面中央下に出る修正版 */
   .controls {
     position: fixed;
     bottom: 20px;
-    left: 0;
-    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
-    z-index: 100;
-    background: rgba(0,0,0,0.3);
-    padding: 10px 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.4);
+    padding: 12px 20px;
     border-radius: 12px;
+    max-width: 90vw;
   }
+
   button {
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255,0.85);
     border: none;
-    padding: 10px 20px;
+    padding: 10px 24px;
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
     transition: 0.3s;
+    white-space: nowrap;
   }
+
   button:hover {
-    background-color: rgba(255,255,255,1);
+    background-color: white;
   }
+
   iframe {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
-    height: 45%;
-    max-width: 800px;
+    width: min(80vw, 800px);
+    height: calc(min(80vw, 800px) * 0.5625);
+    border: none;
     border-radius: 12px;
-    z-index: 50;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    z-index: 5000;
+    background: black;
   }
+
   .close-video {
     position: absolute;
-    top: calc(50% - 200px);
-    right: calc(50% - 400px);
+    top: calc(50% - 230px);
+    left: calc(50% + 350px);
     background-color: rgba(255,80,80,0.9);
     color: white;
     border: none;
     border-radius: 8px;
     padding: 6px 10px;
     cursor: pointer;
-    z-index: 60;
+    z-index: 6000;
     font-size: 14px;
   }
+
 </style>
 </head>
 <body>
@@ -127,6 +136,7 @@ function showSlide(index) {
   const controls = document.createElement("div");
   controls.className = "controls";
 
+  /* ▼ 前へボタン */
   if (index > 0) {
     const backBtn = document.createElement("button");
     backBtn.textContent = "前へ";
@@ -137,6 +147,7 @@ function showSlide(index) {
     controls.appendChild(backBtn);
   }
 
+  /* ▼ 分岐（現実音・非現実音） */
   if (slideData.branch) {
     const btnA = document.createElement("button");
     btnA.textContent = "現実音へ";
@@ -149,6 +160,7 @@ function showSlide(index) {
     controls.appendChild(btnB);
   }
 
+  /* ▼ YouTube動画 */
   if (slideData.yt) {
     slideData.yt.forEach((url, i) => {
       const videoBtn = document.createElement("button");
@@ -175,13 +187,15 @@ function showSlide(index) {
     });
   }
 
-  if (slideData.to !== undefined) {
+  /* ▼ 次へ */
+  if (typeof slideData.to === "number") {
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "次へ";
     nextBtn.onclick = () => showSlide(slideData.to);
     controls.appendChild(nextBtn);
   }
 
+  /* ▼ 終了スライド */
   if (slideData.end) {
     const restartBtn = document.createElement("button");
     restartBtn.textContent = "最初に戻る";
@@ -192,6 +206,7 @@ function showSlide(index) {
   slide.appendChild(controls);
   slidesContainer.appendChild(slide);
   slide.style.display = "block";
+
   currentSlide = index;
 }
 
@@ -200,3 +215,4 @@ window.onload = () => showSlide(0);
 
 </body>
 </html>
+
